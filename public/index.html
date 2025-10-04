@@ -1,15 +1,57 @@
-<style>
-    img{
-        max-width: 45%
-    }
-    canvas{
-        position: absolute;
-    }
-</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face API + WebView Token</title>
+    <style>
+        #container {
+            display: flex;
+            justify-content: center;
+        }
+        canvas {
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="container">
+        <video id="video-feed" height="560" width="720" autoplay muted></video>
+    </div>
 
-<canvas id="canvas"></canvas>
+    <!-- Face API library -->
+    <script src="./face-api.min.js"></script>
+    <!-- Your face detection scripts -->
+    <script src="./scripts.js"></script>
 
-<img id="face" src="./images/oldMan1.png" />
+    <!-- WebView token listener -->
+    <script>
+        window.addEventListener('message', (event) => {
+            // Optional: restrict messages to trusted origin
+            // if (event.origin !== 'https://your-trusted-source.com') return;
 
-<script src="./face-api.min.js"></script>
-<script src="./scripts.js"></script>
+            try {
+                const data = JSON.parse(event.data);
+                const token = data.token;
+                console.log('Received token from WebView:', token);
+
+                // Example: use the token to fetch data from your backend
+                fetch('https://your-backend.com/api/data', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => console.log('Backend data:', data))
+                .catch(err => console.error('Fetch error:', err));
+
+            } catch (err) {
+                console.error('Invalid token format', err);
+            }
+        });
+    </script>
+</body>
+</html>
