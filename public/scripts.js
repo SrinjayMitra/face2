@@ -19,9 +19,7 @@ document.getElementById('video-section').appendChild(flashOverlay);
 
 function triggerFlash() {
   flashOverlay.style.opacity = '1';
-  setTimeout(() => {
-    flashOverlay.style.opacity = '0';
-  }, 100);
+  setTimeout(() => { flashOverlay.style.opacity = '0'; }, 100);
 }
 
 function updateDirectionOverlay(direction) {
@@ -40,6 +38,27 @@ function updateDirectionOverlay(direction) {
 
 updateDirectionOverlay(directions[currentTargetIndex]);
 
+// Lightbox for gallery
+const lightbox = document.createElement('div');
+lightbox.style.position = 'fixed';
+lightbox.style.top = '0';
+lightbox.style.left = '0';
+lightbox.style.width = '100%';
+lightbox.style.height = '100%';
+lightbox.style.background = 'rgba(0,0,0,0.9)';
+lightbox.style.display = 'none';
+lightbox.style.justifyContent = 'center';
+lightbox.style.alignItems = 'center';
+lightbox.style.zIndex = '20';
+const lightboxImg = document.createElement('img');
+lightboxImg.style.maxWidth = '90%';
+lightboxImg.style.maxHeight = '90%';
+lightbox.appendChild(lightboxImg);
+document.body.appendChild(lightbox);
+
+lightbox.addEventListener('click', e => { if(e.target===lightbox) lightbox.style.display='none'; });
+
+// Main
 const run = async () => {
   let picsTaken = 0;
 
@@ -47,12 +66,7 @@ const run = async () => {
   const videoElement = document.getElementById("video-feed");
   videoElement.srcObject = stream;
 
-  await new Promise(resolve => {
-    videoElement.onloadedmetadata = () => {
-      videoElement.play();
-      resolve();
-    };
-  });
+  await new Promise(resolve => { videoElement.onloadedmetadata = () => { videoElement.play(); resolve(); } });
 
   await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
   await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
@@ -96,12 +110,9 @@ const run = async () => {
       const leftEye = landmarks.getLeftEye();
       const rightEye = landmarks.getRightEye();
 
-      const noseX = nose[3].x;
-      const noseY = nose[3].y;
-      const leftEyeX = leftEye[0].x;
-      const rightEyeX = rightEye[3].x;
-      const leftEyeY = leftEye[0].y;
-      const rightEyeY = rightEye[3].y;
+      const noseX = nose[3].x, noseY = nose[3].y;
+      const leftEyeX = leftEye[0].x, rightEyeX = rightEye[3].x;
+      const leftEyeY = leftEye[0].y, rightEyeY = rightEye[3].y;
 
       const leftDist = Math.abs(noseX - leftEyeX);
       const rightDist = Math.abs(rightEyeX - noseX);
@@ -154,6 +165,12 @@ async function takePhotoAndSend(video, direction, galleryContainer) {
   img.src = dataUrl;
   img.alt = `Photo facing ${direction}`;
   galleryContainer.appendChild(img);
+
+  // Add click-to-zoom
+  img.addEventListener('click', () => {
+    lightboxImg.src = img.src;
+    lightbox.style.display = 'flex';
+  });
 
   console.log(`Captured photo facing ${direction}`);
 }
