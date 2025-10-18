@@ -11,7 +11,6 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      height: 100vh;
       font-family: sans-serif;
     }
 
@@ -25,9 +24,9 @@
       justify-content: center;
       align-items: center;
       background: #111;
-      border: 3px solid #ffcc00; /* gold border */
+      border: 3px solid #ffcc00;
       border-radius: 12px;
-      box-shadow: 0 0 15px rgba(255, 204, 0, 0.4); /* subtle gold glow */
+      box-shadow: 0 0 15px rgba(255, 204, 0, 0.4);
       margin-top: 10px;
     }
 
@@ -35,7 +34,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transform: scale(1.05); /* slight zoom for better fit */
+      transform: scale(1.05);
       border-radius: 12px;
     }
 
@@ -48,7 +47,36 @@
       border-radius: 12px;
     }
 
-    /* Gallery section right below video */
+    /* Direction text + arrow overlay */
+    #direction-text {
+      position: absolute;
+      top: 8%;
+      width: 100%;
+      text-align: center;
+      font-size: 1.6rem;
+      color: #ffcc00;
+      font-weight: bold;
+      text-shadow: 0 0 10px rgba(255, 204, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      z-index: 5;
+    }
+
+    /* Arrow animation */
+    .arrow {
+      display: inline-block;
+      font-size: 1.8rem;
+      animation: bounce 1s ease-in-out infinite alternate;
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to { transform: translateY(-8px); }
+    }
+
+    /* Gallery section below video */
     #gallery {
       width: 100%;
       background: #1a1a1a;
@@ -56,11 +84,11 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 8px 0;
+      padding: 6px 0;
     }
 
     #gallery h2 {
-      margin: 0 0 6px 0;
+      margin: 4px 0;
       font-size: 1rem;
       color: #ffcc00;
     }
@@ -69,8 +97,8 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 6px;
-      padding-bottom: 4px;
+      gap: 5px;
+      padding-bottom: 6px;
     }
 
     #gallery-images img {
@@ -87,6 +115,10 @@
   <div id="video-section">
     <video id="video-feed" autoplay muted playsinline></video>
     <canvas id="canvas"></canvas>
+    <div id="direction-text">
+      <span id="direction-label">Look Center</span>
+      <span id="direction-arrow" class="arrow">➡️</span>
+    </div>
   </div>
 
   <div id="gallery">
@@ -107,20 +139,35 @@
         const token = data.token;
         console.log("Received token from WebView:", token);
 
-        // fetch("https://your-backend.com/api/data", {
-        //   method: "GET",
-        //   headers: {
-        //     Authorization: `Bearer ${token}`,
-        //     "Content-Type": "application/json",
-        //   },
-        // })
-        //   .then((res) => res.json())
-        //   .then((data) => console.log("Backend data:", data))
-        //   .catch((err) => console.error("Fetch error:", err));
+        fetch("https://your-backend.com/api/data", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        })
+          .then((res) => res.json())
+          .then((data) => console.log("Backend data:", data))
+          .catch((err) => console.error("Fetch error:", err));
       } catch (err) {
         console.error("Invalid token format", err);
       }
     });
+  </script>
+
+  <!-- Update direction arrow in scripts.js -->
+  <script>
+    const updateDirectionOverlay = (direction) => {
+      const label = document.getElementById('direction-label');
+      const arrow = document.getElementById('direction-arrow');
+
+      label.innerText = `Look ${direction}`;
+
+      if(direction === 'Left') arrow.innerText = '⬅️';
+      else if(direction === 'Right') arrow.innerText = '➡️';
+      else if(direction === 'Center') arrow.innerText = '⬆️';
+      else if(direction === 'Down') arrow.innerText = '⬇️';
+    };
   </script>
 </body>
 </html>

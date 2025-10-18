@@ -8,7 +8,7 @@ const run = async () => {
   const videoElement = document.getElementById("video-feed");
   videoElement.srcObject = stream;
 
-  // ✅ Wait for video to load metadata (ensures width/height are valid)
+  // ✅ Wait for video to load metadata
   await new Promise(resolve => {
     videoElement.onloadedmetadata = () => {
       videoElement.play();
@@ -29,19 +29,52 @@ const run = async () => {
   const ctx = canvas.getContext('2d');
 
   // ✅ Create gallery container
-  const galleryContainer = document.createElement('div');
-  galleryContainer.id = 'photo-gallery';
-  galleryContainer.style.display = 'flex';
-  galleryContainer.style.flexWrap = 'wrap';
-  galleryContainer.style.justifyContent = 'center';
-  galleryContainer.style.marginTop = '10px';
-  document.body.appendChild(galleryContainer);
+  let galleryContainer = document.getElementById('gallery-images');
+  if (!galleryContainer) {
+    const galleryWrapper = document.createElement('div');
+    galleryWrapper.id = 'gallery';
+    galleryWrapper.style.width = '100%';
+    galleryWrapper.style.display = 'flex';
+    galleryWrapper.style.flexDirection = 'column';
+    galleryWrapper.style.alignItems = 'center';
+    galleryWrapper.style.marginTop = '5px';
+    const h2 = document.createElement('h2');
+    h2.innerText = 'Captured Faces';
+    h2.style.color = '#ffcc00';
+    h2.style.margin = '5px 0';
+    galleryWrapper.appendChild(h2);
+    galleryContainer = document.createElement('div');
+    galleryContainer.id = 'gallery-images';
+    galleryContainer.style.display = 'flex';
+    galleryContainer.style.flexWrap = 'wrap';
+    galleryContainer.style.justifyContent = 'center';
+    galleryContainer.style.gap = '5px';
+    galleryWrapper.appendChild(galleryContainer);
+    document.body.appendChild(galleryWrapper);
+  }
+
+  // ✅ Create direction overlay
+  let directionText = document.getElementById('direction-text');
+  if (!directionText) {
+    directionText = document.createElement('div');
+    directionText.id = 'direction-text';
+    directionText.style.position = 'absolute';
+    directionText.style.top = '8%';
+    directionText.style.width = '100%';
+    directionText.style.textAlign = 'center';
+    directionText.style.fontSize = '1.6rem';
+    directionText.style.color = '#ffcc00';
+    directionText.style.fontWeight = 'bold';
+    directionText.style.textShadow = '0 0 8px rgba(255,204,0,0.8)';
+    directionText.style.zIndex = '5';
+    updateDirectionOverlay(direction);
+    document.getElementById('video-section').appendChild(directionText);
+  }
 
   let lastCaptured = null;
   let captureTimeout = null;
 
   setInterval(async () => {
-    // ✅ Skip if video is not ready
     if (videoElement.videoWidth === 0 || videoElement.videoHeight === 0) return;
 
     // ✅ Detect faces + landmarks + expressions
@@ -50,7 +83,6 @@ const run = async () => {
       .withFaceLandmarks()
       .withFaceExpressions();
 
-    // ✅ Resize results safely
     const resizedDetections = faceapi.resizeResults(detections, {
       width: videoElement.videoWidth,
       height: videoElement.videoHeight
@@ -62,7 +94,7 @@ const run = async () => {
     faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
     faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
 
-    // ✅ Detect head direction + capture logic
+    // ✅ Detect head direction + update overlay
     resizedDetections.forEach(face => {
       const { landmarks, detection } = face;
       if (!landmarks) return;
@@ -91,11 +123,12 @@ const run = async () => {
 
       new faceapi.draw.DrawTextField([direction], detection.box.bottomLeft).draw(canvas);
 
-      // ✅ Capture photo 1s after a new direction
+      // ✅ Update direction overlay
+      directionText.innerText = `Look ${direction}`;
+
+      // ✅ Capture photo
       if (['Left', 'Right', 'Down'].includes(direction) && direction !== lastCaptured) {
         lastCaptured = direction;
-
-        // clear existing timeout
         if (captureTimeout) clearTimeout(captureTimeout);
 
         if (picsTaken >= 3) return;
@@ -104,13 +137,11 @@ const run = async () => {
           picsTaken++;
         }, 1000);
       }
-
-      console.log('Face Direction:', direction);
     });
   }, 200);
 };
 
-// ✅ Capture photo + display locally
+// ✅ Capture photo + display
 async function takePhotoAndSend(video, direction, galleryContainer) {
   const photoCanvas = document.createElement('canvas');
   photoCanvas.width = video.videoWidth;
@@ -132,21 +163,20 @@ async function takePhotoAndSend(video, direction, galleryContainer) {
   img.style.boxShadow = '0 0 5px rgba(0,0,0,0.5)';
   galleryContainer.appendChild(img);
 
-  // ✅ Example for sending to backend (optional)
-  // try {
-  //   const response = await fetch('https://your-api-endpoint.com/upload', {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify({ image: dataUrl, direction: direction })
-  //   });
-  //   const result = await response.json();
-  //   console.log('API response:', result);
-  // } catch (err) {
-  //   console.error('API upload error:', err);
-  // }
-
   console.log(`Captured photo facing ${direction}`);
 }
 
-// ✅ Run the main function
+
+// Auto-cycle direction overlay for guidance
+const autoCycleDirections = ['Left', 'Right', 'Center'];
+let autoCycleIndex = 0;
+
+setInterval(() => {
+  const direction = autoCycleDirections[autoCycleIndex];
+  updateDirectionOverlay(direction);
+  autoCycleIndex = (autoCycleIndex + 1) % autoCycleDirections.length;
+}, 2500); // change every 2.5 seconds
+
+
+// ✅ Run main function
 run();
