@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Face API + WebView Token</title>
+  <script type="module">
+  import { Analytics } from 'https://esm.sh/@vercel/analytics@latest/react';
+  const analytics = new Analytics();
+  analytics.init();
+</script>   
   <style>
     body {
       margin: 0;
@@ -154,5 +159,6 @@
       }
     });
   </script>
+  
 </body>
 </html>
