@@ -145,7 +145,7 @@ const run = async () => {
             videoElement.style.filter = 'blur(6px)';
             canvas.style.filter = 'blur(6px)';
           }
-        }, 1000);
+        }, 1500);
       }
     });
   }, 200);
