@@ -1,203 +1,152 @@
-console.log(faceapi)
+console.log(faceapi);
 
 const run = async () => {
-    let picsTaken = 0
-    // Start webcam
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-    const videoElement = document.getElementById("video-feed")
-    videoElement.srcObject = stream
+  let picsTaken = 0;
 
-    // Load models
-    await faceapi.nets.tinyFaceDetector.loadFromUri('/models')
-    await faceapi.nets.faceLandmark68Net.loadFromUri('/models')
-    await faceapi.nets.faceExpressionNet.loadFromUri('/models')
-    console.log("Models Loaded")
+  // ✅ Start webcam
+  const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+  const videoElement = document.getElementById("video-feed");
+  videoElement.srcObject = stream;
 
-    const canvas = document.getElementById('canvas')
-    canvas.style.left = videoElement.offsetLeft + 'px'
-    canvas.style.top = videoElement.offsetTop + 'px'
-    canvas.width = videoElement.width
-    canvas.height = videoElement.height
+  // ✅ Wait for video to load metadata (ensures width/height are valid)
+  await new Promise(resolve => {
+    videoElement.onloadedmetadata = () => {
+      videoElement.play();
+      resolve();
+    };
+  });
 
-    const ctx = canvas.getContext('2d')
-    const galleryContainer = document.createElement('div')
-    galleryContainer.id = 'photo-gallery'
-    document.body.appendChild(galleryContainer)
+  // ✅ Load Face API models
+  await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+  await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+  await faceapi.nets.faceExpressionNet.loadFromUri('/models');
+  console.log("Models Loaded");
 
-    let lastCaptured = null
-    let captureTimeout = null
+  const canvas = document.getElementById('canvas');
+  canvas.width = videoElement.videoWidth;
+  canvas.height = videoElement.videoHeight;
 
-    setInterval(async () => {
-        const detections = await faceapi.detectAllFaces(videoElement,
-            new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 })
-        )
-            .withFaceLandmarks()
-            .withFaceExpressions()
+  const ctx = canvas.getContext('2d');
 
-        const resizedDetections = faceapi.resizeResults(detections, { width: videoElement.width, height: videoElement.height })
+  // ✅ Create gallery container
+  const galleryContainer = document.createElement('div');
+  galleryContainer.id = 'photo-gallery';
+  galleryContainer.style.display = 'flex';
+  galleryContainer.style.flexWrap = 'wrap';
+  galleryContainer.style.justifyContent = 'center';
+  galleryContainer.style.marginTop = '10px';
+  document.body.appendChild(galleryContainer);
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-        faceapi.draw.drawDetections(canvas, resizedDetections)
-        faceapi.draw.drawFaceLandmarks(canvas, resizedDetections)
-        faceapi.draw.drawFaceExpressions(canvas, resizedDetections)
+  let lastCaptured = null;
+  let captureTimeout = null;
 
-        resizedDetections.forEach(face => {
-            const { landmarks, detection } = face
-            if (!landmarks) return
+  setInterval(async () => {
+    // ✅ Skip if video is not ready
+    if (videoElement.videoWidth === 0 || videoElement.videoHeight === 0) return;
 
-            const nose = landmarks.getNose()
-            const leftEye = landmarks.getLeftEye()
-            const rightEye = landmarks.getRightEye()
+    // ✅ Detect faces + landmarks + expressions
+    const detections = await faceapi
+      .detectAllFaces(videoElement, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
+      .withFaceLandmarks()
+      .withFaceExpressions();
 
-            const noseX = nose[3].x
-            const noseY = nose[3].y
-            const leftEyeX = leftEye[0].x
-            const rightEyeX = rightEye[3].x
-            const leftEyeY = leftEye[0].y
-            const rightEyeY = rightEye[3].y
+    // ✅ Resize results safely
+    const resizedDetections = faceapi.resizeResults(detections, {
+      width: videoElement.videoWidth,
+      height: videoElement.videoHeight
+    });
 
-            const leftDist = Math.abs(noseX - leftEyeX)
-            const rightDist = Math.abs(rightEyeX - noseX)
-            const eyeAvgY = (leftEyeY + rightEyeY) / 2
-            const verticalDiff = noseY - eyeAvgY
+    // ✅ Draw results
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    faceapi.draw.drawDetections(canvas, resizedDetections);
+    faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+    faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
 
-            let direction = 'Center'
-            if (leftDist > rightDist * 1.2) direction = 'Left'
-            else if (rightDist > leftDist * 1.2) direction = 'Right'
-            else if (verticalDiff > 15) direction = 'Down'
-            else if (verticalDiff < -15) direction = 'Up'
+    // ✅ Detect head direction + capture logic
+    resizedDetections.forEach(face => {
+      const { landmarks, detection } = face;
+      if (!landmarks) return;
 
-            new faceapi.draw.DrawTextField([direction], detection.box.bottomLeft).draw(canvas)
+      const nose = landmarks.getNose();
+      const leftEye = landmarks.getLeftEye();
+      const rightEye = landmarks.getRightEye();
 
-            // Capture photo 1.5 seconds after orientation change
-            if (['Left', 'Right', 'Down'].includes(direction) && direction !== lastCaptured) {
-                lastCaptured = direction
+      const noseX = nose[3].x;
+      const noseY = nose[3].y;
+      const leftEyeX = leftEye[0].x;
+      const rightEyeX = rightEye[3].x;
+      const leftEyeY = leftEye[0].y;
+      const rightEyeY = rightEye[3].y;
 
-                // Clear any existing timeout to avoid multiple captures
-                if (captureTimeout) clearTimeout(captureTimeout)
+      const leftDist = Math.abs(noseX - leftEyeX);
+      const rightDist = Math.abs(rightEyeX - noseX);
+      const eyeAvgY = (leftEyeY + rightEyeY) / 2;
+      const verticalDiff = noseY - eyeAvgY;
 
-                if (picsTaken >= 3) return
-                captureTimeout = setTimeout(() => {
-                    takePhotoAndSend(videoElement, direction, galleryContainer)
-                    picsTaken++;
-                }, 1000) // 1.5 seconds
-            }
+      let direction = 'Center';
+      if (leftDist > rightDist * 1.2) direction = 'Left';
+      else if (rightDist > leftDist * 1.2) direction = 'Right';
+      else if (verticalDiff > 15) direction = 'Down';
+      else if (verticalDiff < -15) direction = 'Up';
 
-            console.log('Face Direction:', direction)
-        })
+      new faceapi.draw.DrawTextField([direction], detection.box.bottomLeft).draw(canvas);
 
-    }, 200)
-}
+      // ✅ Capture photo 1s after a new direction
+      if (['Left', 'Right', 'Down'].includes(direction) && direction !== lastCaptured) {
+        lastCaptured = direction;
 
+        // clear existing timeout
+        if (captureTimeout) clearTimeout(captureTimeout);
+
+        if (picsTaken >= 3) return;
+        captureTimeout = setTimeout(() => {
+          takePhotoAndSend(videoElement, direction, galleryContainer);
+          picsTaken++;
+        }, 1000);
+      }
+
+      console.log('Face Direction:', direction);
+    });
+  }, 200);
+};
+
+// ✅ Capture photo + display locally
 async function takePhotoAndSend(video, direction, galleryContainer) {
-    const photoCanvas = document.createElement('canvas')
-    photoCanvas.width = video.videoWidth
-    photoCanvas.height = video.videoHeight
-    const ctx = photoCanvas.getContext('2d')
-    ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight)
+  const photoCanvas = document.createElement('canvas');
+  photoCanvas.width = video.videoWidth;
+  photoCanvas.height = video.videoHeight;
 
-    const dataUrl = photoCanvas.toDataURL('image/png')
+  const ctx = photoCanvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
 
-    // Display in gallery
-    const img = document.createElement('img')
-    img.src = dataUrl
-    img.alt = `Photo facing ${direction}`
-    galleryContainer.appendChild(img)
+  const dataUrl = photoCanvas.toDataURL('image/png');
 
-    // Send to API
-    // try {
-    //     const response = await fetch('https://your-api-endpoint.com/upload', {
-    //         method: 'POST',
-    //         headers: { 'Content-Type': 'application/json' },
-    //         body: JSON.stringify({ image: dataUrl, direction: direction })
-    //     })
-    //     const result = await response.json()
-    //     console.log('API response:', result)
-    // } catch (err) {
-    //     console.error('API upload error:', err)
-    // }
+  // ✅ Display in gallery
+  const img = document.createElement('img');
+  img.src = dataUrl;
+  img.alt = `Photo facing ${direction}`;
+  img.style.width = '100px';
+  img.style.height = 'auto';
+  img.style.margin = '5px';
+  img.style.borderRadius = '10px';
+  img.style.boxShadow = '0 0 5px rgba(0,0,0,0.5)';
+  galleryContainer.appendChild(img);
 
-    console.log(`Captured photo facing ${direction}`)
+  // ✅ Example for sending to backend (optional)
+  // try {
+  //   const response = await fetch('https://your-api-endpoint.com/upload', {
+  //     method: 'POST',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify({ image: dataUrl, direction: direction })
+  //   });
+  //   const result = await response.json();
+  //   console.log('API response:', result);
+  // } catch (err) {
+  //   console.error('API upload error:', err);
+  // }
+
+  console.log(`Captured photo facing ${direction}`);
 }
 
-run()
-
-
-
-// console.log(faceapi)
-
-// const run = async()=>{
-//     //loading the models is going to use await
-//     const stream = await navigator.mediaDevices.getUserMedia({
-//         video: true,
-//         audio: false,
-//     })
-//     const videoFeedEl = document.getElementById('video-feed')
-//     videoFeedEl.srcObject = stream
-//     //we need to load our models
-//     // pre-trained machine learning for our facial detection!
-//     await Promise.all([
-//         faceapi.nets.ssdMobilenetv1.loadFromUri('./models'),
-//         faceapi.nets.faceLandmark68Net.loadFromUri('./models'),
-//         faceapi.nets.faceRecognitionNet.loadFromUri('./models'),
-//         faceapi.nets.ageGenderNet.loadFromUri('./models'),
-//         faceapi.nets.faceExpressionNet.loadFromUri('./models'),
-//     ])
-//     console.log('Models Loaded')
-
-//     //make the canvas the same size and in the same location
-//     // as our video feed
-//     const canvas = document.getElementById('canvas')
-//     canvas.style.left = videoFeedEl.offsetLeft
-//     canvas.style.top = videoFeedEl.offsetTop
-//     canvas.height = videoFeedEl.height
-//     canvas.width = videoFeedEl.width
-
-//     /////OUR FACIAL RECOGNITION DATA
-//     // we KNOW who this is (Michael Jordan)
-//     const refFace = await faceapi.fetchImage('https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/220px-Michael_Jordan_in_2014.jpg')
-//     //we grab the reference image, and hand it to detectAllFaces method
-//     let refFaceAiData = await faceapi.detectAllFaces(refFace).withFaceLandmarks().withFaceDescriptors()
-//     let faceMatcher = new faceapi.FaceMatcher(refFaceAiData)
-
-//     // facial detection with points
-//     setInterval(async()=>{
-//         // get the video feed and hand it to detectAllFaces method
-//         let faceAIData = await faceapi.detectAllFaces(videoFeedEl).withFaceLandmarks().withFaceDescriptors().withAgeAndGender().withFaceExpressions()
-//         // console.log(faceAIData)
-//         // we have a ton of good facial detection data in faceAIData
-//         // faceAIData is an array, one element for each face
-
-//         // draw on our face/canvas
-//         //first, clear the canvas
-//         canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height)
-//         // draw our bounding box
-//         faceAIData = faceapi.resizeResults(faceAIData,videoFeedEl)
-//         faceapi.draw.drawDetections(canvas,faceAIData)
-//         faceapi.draw.drawFaceLandmarks(canvas,faceAIData)
-//         faceapi.draw.drawFaceExpressions(canvas,faceAIData)
-
-//         // ask AI to guess age and gender with confidence level
-//         faceAIData.forEach(face=>{
-//             const { age, gender, genderProbability, detection, descriptor } = face
-//             const genderText = `${gender} - ${Math.round(genderProbability*100)/100*100}`
-//             const ageText = `${Math.round(age)} years`
-//             const textField = new faceapi.draw.DrawTextField([genderText,ageText],face.detection.box.topRight)
-//             textField.draw(canvas)
-
-//             let label = faceMatcher.findBestMatch(descriptor).toString()
-//             // console.log(label)
-//             let options = {label: "Jordan"}
-//             if(label.includes("unknown")){
-//                 options = {label: "Unknown subject..."}
-//             }
-//             const drawBox = new faceapi.draw.DrawBox(detection.box, options)
-//             drawBox.draw(canvas)
-//         })
-        
-
-//     },200)
-
-// }
-
-// run()
+// ✅ Run the main function
+run();
