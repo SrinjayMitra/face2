@@ -224,9 +224,11 @@
       const data = JSON.parse(event.data);
       const token = data.accessToken;
 
-      console.log("Received data from WebView:", data);
+      console.log("Received data from WebView:", JSON.stringify(data, null, 2));
       console.log("\n");
       console.log("Received token from WebView:", token);
+
+      console.log("User Info:", JSON.stringify(data.user, null, 2));
 
 
 
