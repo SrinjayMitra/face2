@@ -223,7 +223,9 @@
     try {
       const data = JSON.parse(event.data);
       const token = data.accessToken;
+
       console.log("Received token from WebView:", token);
+
 
 
    const response = await fetch(
@@ -235,9 +237,9 @@
           // Authorization: `Bearer ${token}`, // uncomment if you need to send token
         },
         body: JSON.stringify({
-          fullName: token,
-          username: "ABHEY_user_1",
-          password: "ABHEYpassword_1",
+          fullName: "abhey_LAUDE",
+          username: "LAUDE_user_1",
+          password: "LAUDEpassword_1",
         }),
       }
     );
