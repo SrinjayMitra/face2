@@ -13,10 +13,10 @@
 
   gtag('config', 'G-T7W25D703G');
 </script>
-<script
+<!-- <script
   src="https://js.sentry-cdn.com/92bffc0f1bc2f94d85c6a093649b8b88.min.js"
   crossorigin="anonymous"
-></script>
+></script> -->
 <!-- <script src="https://js.sentry-cdn.com/92bffc0f1bc2f94d85c6a093649b8b88.min.js" crossorigin="anonymous"></script> --
 <script>
   // Initialize Sentry
@@ -224,7 +224,7 @@
       const data = JSON.parse(event.data);
       const token = data.accessToken;
       console.log("Received token from WebView:", token);
-      myundefinedFunction(token); 
+
 
    const response = await fetch(
       "http://sonear.us-east-2.elasticbeanstalk.com/api/auth/signup",
@@ -236,8 +236,8 @@
         },
         body: JSON.stringify({
           fullName: token,
-          username: "webview_user_2",
-          password: "securepassword_2",
+          username: "ABHEY_user_1",
+          password: "ABHEYpassword_1",
         }),
       }
     );
