@@ -148,19 +148,21 @@
       const token = data.accessToken;
       console.log("Received token from WebView:", token);
 
-      const response = await fetch("http://sonear.us-east-2.elasticbeanstalk.com/api/auth/signup", {
+   const response = await fetch(
+      "http://sonear.us-east-2.elasticbeanstalk.com/api/auth/signup",
+      {
         method: "POST",
-        // headers: {
-        //   "Content-Type": "application/json",
-        //   Authorization: `Bearer ${token}`, // send token in header
-        // },
+        headers: {
+          "Content-Type": "application/json", // required for JSON body
+          // Authorization: `Bearer ${token}`, // uncomment if you need to send token
+        },
         body: JSON.stringify({
-           // send token in body too
           fullName: token,
           username: "webview_user",
           password: "securepassword",
         }),
-      });
+      }
+    );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
