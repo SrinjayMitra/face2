@@ -142,27 +142,38 @@
 
   <!-- WebView token listener -->
   <script>
-    window.addEventListener("message", (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        const token = data.token;
-        console.log("Received token from WebView:", token);
+  window.addEventListener("message", async (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      const token = data.accessToken;
+      console.log("Received token from WebView:", token);
 
-        fetch("https://your-backend.com/api/data", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        })
-          .then((res) => res.json())
-          .then((data) => console.log("Backend data:", data))
-          .catch((err) => console.error("Fetch error:", err));
-      } catch (err) {
-        console.error("Invalid token format", err);
+      const response = await fetch("http://sonear.us-east-2.elasticbeanstalk.com/api/auth/signup", {
+        method: "POST",
+        // headers: {
+        //   "Content-Type": "application/json",
+        //   Authorization: `Bearer ${token}`, // send token in header
+        // },
+        body: JSON.stringify({
+           // send token in body too
+          fullName: token,
+          username: "webview_user",
+          password: "securepassword",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    });
-  </script>
-  
+
+      const result = await response.json();
+      console.log("Backend data:", result);
+
+    } catch (err) {
+      console.error("Error handling token or fetching data:", err);
+    }
+  });
+</script>
+
 </body>
 </html>
