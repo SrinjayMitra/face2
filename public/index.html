@@ -252,7 +252,8 @@
       console.log("Backend data:", result);
 
     } catch (err) {
-      console.error("Error handling token or fetching data:", err);
+      console.error("Error handling token or fetching data:", err.message);
+      console.log(err.message);
     }
   });
 </script>
