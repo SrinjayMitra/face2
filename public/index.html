@@ -223,6 +223,9 @@
     try {
       const data = JSON.parse(event.data);
       const token = data.accessToken;
+      localStorage.setItem("accessToken", token);
+      const refreshToken = data.refreshToken;
+      localStorage.setItem("refreshToken", refreshToken);
 
       console.log("Received data from WebView:", JSON.stringify(data, null, 2));
       console.log("\n");
@@ -232,30 +235,29 @@
 
 
 
-   const response = await fetch(
-        "https://inyourspace.tech/api/auth/signup",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json", // required for JSON body
-          // Authorization: `Bearer ${token}`, // uncomment if you need to send token
-        },
-        body: JSON.stringify({
-          fullName: "srinjay",
-          username: "srinuay",
-          password: "srinjay",
-        }),
-      }
-    );
+  //  const response = await fetch(
+  //       "https://inyourspace.tech/api/avatar/url",
+  //     {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json", // required for JSON body
+  //         "Authorization": `Bearer ${accessToken}`, // uncomment if you need to send token
+  //       },
+  //       body: JSON.stringify({
+  //         "fileNames": [data.user.avatar]
+  //       }),
+  //     }
+  //   );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      // if (!response.ok) {
+      //   throw new Error(`HTTP error! status: ${response.status}`);
+      // }
 
-      const result = await response.json();
-      console.log("Backend data:", result);
+      // const result = await response.json();
+      // console.log("Backend data:", result);
 
-    } catch (err) {
+    }
+     catch (err) {
       console.error("Error handling token or fetching data:", err.message);
       console.log(err.message);
     }

@@ -160,6 +160,7 @@ async function takePhotoAndSend(video, direction, galleryContainer) {
   ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
 
   const dataUrl = photoCanvas.toDataURL('image/png');
+  const blob = await (await fetch(dataUrl)).blob();
 
   const img = document.createElement('img');
   img.src = dataUrl;
@@ -173,6 +174,85 @@ async function takePhotoAndSend(video, direction, galleryContainer) {
   });
 
   console.log(`Captured photo facing ${direction}`);
+
+ const accessToken = localStorage.getItem("accessToken");
+ const refreshToken = localStorage.getItem("refreshToken");
+  const fileName = `face_${direction}_${Date.now()}.png`;
+
+  try {
+    // Step 1: Request presigned URL from your backend
+    const res = await fetch("https://inyourspace.tech/api/avatar/url", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        fileNames: [fileName],
+        fileTypes: ["image/png"],
+      }),
+    });
+
+    // console.log("✅ Received presigned URL from backend:]\n", res.json());
+
+    if (!res.ok) {
+  const err = await res.text();
+  throw new Error(`Failed to get upload URLs: ${err}`);
+}
+else if (res.status===401){
+  // throw new Error(`Unauthorized: Please check your access token.`);
+   const newToken = await fetch("https://inyourspace.tech/api/auth/refresh", {
+     method: "POST",
+     headers: {
+       "Content-Type": "application/json",
+       "Authorization": `Bearer ${refreshToken}`,
+     },
+     body: JSON.stringify({
+       refreshToken: refreshToken,
+     }),
+   });
+
+   if (!newToken.ok) {
+     const err = await newToken.text();
+     throw new Error(`Failed to refresh token: ${err}`);
+   }
+
+   const { accessToken: newAccessToken } = await newToken.json();
+   localStorage.setItem("accessToken", newAccessToken);
+}
+
+const data = await res.json();
+    const { uploadUrls } = data;
+    console.log("✅ Presigned upload URL:", uploadUrls);
+
+    const { uploadUrl, fileKey } = uploadUrls[0];
+
+    // Step 2: Upload the image directly to S3
+    const upload = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: { "Content-Type": "image/png" },
+      body: blob,
+    });
+    if (!upload.ok) throw new Error("Failed to upload image to S3");
+
+    console.log("✅ Uploaded image to S3:", fileKey);
+
+    // Step 3: Mark uploaded in DB
+    await fetch("https://inyourspace.tech/api/avatar/mark-uploaded", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ fileKey }),
+    });
+
+    console.log("✅ Marked as uploaded:", fileKey);
+
+    /// confirmulpad endpoint hit to be done tomorrow
+  } catch (err) {
+    console.error("❌ Upload flow error:", err);
+  }
 }
 
 // Start
