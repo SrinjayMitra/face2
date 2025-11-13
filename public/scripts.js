@@ -3,6 +3,7 @@ console.log(faceapi);
 const directions = ['Left', 'Right', 'Center'];
 let currentTargetIndex = 0;
 const MAX_PHOTOS = 5;
+let uploadedFileKeys = [];
 
 // Flash overlay element
 const flashOverlay = document.createElement('div');
@@ -237,8 +238,10 @@ const data = await res.json();
 
     console.log("✅ Uploaded image to S3:", fileKey);
 
+    uploadedFileKeys.push(fileKey);
+
     // Step 3: Mark uploaded in DB
-    await fetch("https://inyourspace.tech/api/avatar/mark-uploaded", {
+    const saveDB = await fetch("https://inyourspace.tech/api/avatar/mark-uploaded", {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -246,10 +249,36 @@ const data = await res.json();
       },
       body: JSON.stringify({ fileKey }),
     });
-
+    if (!saveDB.ok) {
+      const err = await saveDB.text();
+      throw new Error(`Failed to mark upload in DB: ${err}`);
+    }
     console.log("✅ Marked as uploaded:", fileKey);
+    console.log(`Uploaded ${uploadedFileKeys.length} of ${MAX_PHOTOS} photos.`);
 
-    /// confirmulpad endpoint hit to be done tomorrow
+    if (uploadedFileKeys.length === MAX_PHOTOS) {
+      console.log("All photos uploaded! Confirming...");
+      const confirmRes = await fetch(
+        "https://inyourspace.tech/api/avatar/confirm",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${accessToken}`,
+          },
+          // body: JSON.stringify({ fileKeys: uploadedFileKeys }),
+        }
+      );
+
+      if (!confirmRes.ok) {
+        const err = await confirmRes.text();
+        throw new Error(`Failed to confirm uploads: ${err}`);
+      }
+
+      const confirmData = await confirmRes.json();
+      console.log("✅ Training confirmed:", confirmData);
+    }
+
   } catch (err) {
     console.error("❌ Upload flow error:", err);
   }
