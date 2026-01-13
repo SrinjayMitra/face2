@@ -2,7 +2,7 @@ console.log(faceapi);
 
 const directions = ['Center', 'Left', 'Right'];
 let currentTargetIndex = 0;
-const MAX_PHOTOS = 5;
+const MAX_PHOTOS = 3;
 let uploadedFileKeys = [];
 let centerMessage = null;
 let centerMessageUntil = 0;
@@ -141,24 +141,29 @@ const run = async () => {
       // else if (verticalDiff > 15) direction = 'Down';
       // else if (verticalDiff < -10) direction = 'Up';
 
-let direction = 'Center';
+// let direction = 'Center';
 
-// LEFT / RIGHT
-if (leftDist > rightDist * 1.2) {
-  direction = 'Left';
-}
-else if (rightDist > leftDist * 1.2) {
-  direction = 'Right';
-}
+// // LEFT / RIGHT
 
-// UP / DOWN
-else if (verticalDiff > 20) {
-  direction = 'Down';
-}
-else if (verticalDiff < -5) {
-  direction = 'Up';
-}
+// if (leftDist > rightDist * 1.2) {
+//   direction = 'Left';
+// }
+// else if (rightDist > leftDist * 1.2) {
+//   direction = 'Right';
+// }
 
+// // UP / DOWN
+// else if (verticalDiff > 20) {
+//   direction = 'Down';
+// }
+// else if (verticalDiff < -5) {
+//   direction = 'Up';
+// }
+
+      let direction = 'Center';
+      if (currentTargetIndex === 1 && leftDist > rightDist * 1.2) direction = 'Left';
+      else if (currentTargetIndex === 2 && rightDist > leftDist * 1.2) direction = 'Right';
+      if (currentTargetIndex === 0) direction = 'Center'; // first photo auto
 
       new faceapi.draw.DrawTextField([direction], detection.box.bottomLeft).draw(canvas);
 
@@ -389,6 +394,27 @@ function showLoadingScreen() {
   screen.style.display = "flex";
 }
 
+// JS - Replace your old run() call with this
+async function showWelcomeThenLoad() {
+  const welcomeScreen = document.getElementById("welcome-screen");
+  const videoSection = document.getElementById("video-section");
 
-// Start
-run();
+  // Load models
+  await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+  await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+  await faceapi.nets.faceExpressionNet.loadFromUri('/models');
+  console.log("Models Loaded");
+
+  // Hide welcome screen
+  welcomeScreen.style.display = 'none';
+  // Show camera section
+  videoSection.style.display = 'block';
+
+  // Start the camera and capture
+  run(); // your existing run() function
+}
+
+// Start everything via welcome screen
+showWelcomeThenLoad();
+
+
