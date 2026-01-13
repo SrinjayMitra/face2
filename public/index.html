@@ -240,14 +240,13 @@
 @keyframes progress {
   to { width: 100%; }
 }
-/* Full-screen welcome */
 #welcome-screen {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at center, #0ff, #00f, #0f0);
+  background: #111; /* black background */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -256,14 +255,15 @@
   overflow: hidden;
 }
 
-/* Glitch neon text */
+/* Glitch neon yellow text */
 .glitch-text {
   font-family: 'Arial Black', sans-serif;
   font-size: 64px;
-  color: #0ff;
+  color: #ffcc00; /* yellow glow */
   position: relative;
   text-transform: uppercase;
   animation: flicker 1.5s infinite;
+  text-shadow: 0 0 5px #ffcc00, 0 0 10px #ffcc00, 0 0 20px #ffcc00;
 }
 
 .glitch-text::before,
@@ -272,7 +272,7 @@
   position: absolute;
   left: 0;
   top: 0;
-  color: #f0f;
+  color: #ffcc00;
   clip: rect(0, 900px, 0, 0);
 }
 
@@ -310,7 +310,7 @@
 .loading-text {
   font-family: monospace;
   font-size: 20px;
-  color: #0ff;
+  color: #ffcc00; /* yellow text */
   margin-top: 20px;
 }
 .dots::after {

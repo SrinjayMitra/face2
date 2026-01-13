@@ -75,6 +75,8 @@ const run = async () => {
   await faceapi.nets.faceExpressionNet.loadFromUri('/models');
   console.log("Models Loaded");
 
+  showCenterMessage(["Models Loading", "Look straight for a few seconds"], 3000);
+
   const canvas = document.getElementById('canvas');
   canvas.width = videoElement.videoWidth;
   canvas.height = videoElement.videoHeight;
@@ -404,6 +406,7 @@ async function showWelcomeThenLoad() {
   await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
   await faceapi.nets.faceExpressionNet.loadFromUri('/models');
   console.log("Models Loaded");
+  await new Promise(resolve => setTimeout(resolve, 5000));
 
   // Hide welcome screen
   welcomeScreen.style.display = 'none';
