@@ -106,6 +106,20 @@ const run = async () => {
     resizedDetections.forEach(face => {
       const { landmarks, detection } = face;
       if (!landmarks) return;
+  /* ================= PHONE DISTANCE CHECK ================= */
+      const faceBox = detection.box;
+      const faceRatio = faceBox.width / videoElement.videoWidth;
+
+      // PHONE: face must be big (≈ 0.5m)
+      const PHONE_FACE_MIN_RATIO = 0.45;
+      if (faceRatio < PHONE_FACE_MIN_RATIO) {
+        new faceapi.draw.DrawTextField(
+          ["Move closer to your phone"],
+          faceBox.topLeft
+        ).draw(canvas);
+        return;
+      }
+
 
       const nose = landmarks.getNose();
       const leftEye = landmarks.getLeftEye();
