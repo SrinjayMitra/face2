@@ -4,7 +4,8 @@ const directions = ['Left', 'Right', 'Center'];
 let currentTargetIndex = 0;
 const MAX_PHOTOS = 5;
 let uploadedFileKeys = [];
-
+let centerMessage = null;
+let centerMessageUntil = 0;
 // Flash overlay element
 const flashOverlay = document.createElement('div');
 flashOverlay.style.position = 'absolute';
@@ -103,20 +104,19 @@ const run = async () => {
     faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
     faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
 
+      drawCenterMessage(ctx, canvas);
+
     resizedDetections.forEach(face => {
       const { landmarks, detection } = face;
       if (!landmarks) return;
   /* ================= PHONE DISTANCE CHECK ================= */
       const faceBox = detection.box;
       const faceRatio = faceBox.width / videoElement.videoWidth;
+      console.log('Face ratio:', faceRatio.toFixed(2));
 
-      // PHONE: face must be big (≈ 0.5m)
-      const PHONE_FACE_MIN_RATIO = 0.45;
-      if (faceRatio < PHONE_FACE_MIN_RATIO) {
-        new faceapi.draw.DrawTextField(
-          ["Move closer to your phone"],
-          faceBox.topLeft
-        ).draw(canvas);
+      /* ===== DISTANCE CHECK ===== */
+      if (faceRatio < 0.35) {
+        showCenterMessage(["Move closer to your phone"], 3000);
         return;
       }
 
@@ -297,6 +297,44 @@ const data = await res.json();
     console.error("❌ Upload flow error:", err);
   }
 }
+function showCenterMessage(lines, duration = 3000) {
+  centerMessage = lines;
+  centerMessageUntil = Date.now() + duration;
+}
 
+function drawCenterMessage(ctx, canvas) {
+  if (!centerMessage || Date.now() > centerMessageUntil) return;
+
+  ctx.save();
+  ctx.font = "bold 26px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2 + 70; // 🔽 LOWERED
+  const padding = 18;
+  const lineHeight = 32;
+  const boxWidth = 420;
+  const boxHeight = centerMessage.length * lineHeight + padding * 2;
+
+  ctx.fillStyle = "rgba(0,0,0,0.65)";
+  ctx.fillRect(
+    centerX - boxWidth / 2,
+    centerY - boxHeight / 2,
+    boxWidth,
+    boxHeight
+  );
+
+  ctx.fillStyle = "#fff";
+  centerMessage.forEach((line, i) => {
+    ctx.fillText(
+      line,
+      centerX,
+      centerY - ((centerMessage.length - 1) * lineHeight) / 2 + i * lineHeight
+    );
+  });
+
+  ctx.restore();
+}
 // Start
 run();
