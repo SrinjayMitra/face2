@@ -110,6 +110,7 @@ const run = async () => {
       const { landmarks, detection } = face;
       if (!landmarks) return;
   /* ================= PHONE DISTANCE CHECK ================= */
+  
       const faceBox = detection.box;
       const faceRatio = faceBox.width / videoElement.videoWidth;
       console.log('Face ratio:', faceRatio.toFixed(2));
@@ -291,6 +292,13 @@ const data = await res.json();
 
       const confirmData = await confirmRes.json();
       console.log("✅ Training confirmed:", confirmData);
+       showCenterMessage(["All done!", "Closing…"], 3000);
+
+  
+      setTimeout(() => {
+    closeWebView();
+  }, 3000);
+
     }
 
   } catch (err) {
@@ -336,5 +344,20 @@ function drawCenterMessage(ctx, canvas) {
 
   ctx.restore();
 }
+
+
+
+function closeWebView() {
+  if (window.ReactNativeWebView) {
+    // React Native WebView
+    window.ReactNativeWebView.postMessage("close");
+  } else {
+    // Browser fallback
+    window.close();
+    window.location.href = "about:blank";
+  }
+}
+
+
 // Start
 run();
