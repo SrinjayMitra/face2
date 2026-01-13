@@ -165,7 +165,7 @@ const run = async () => {
       let direction = 'Center';
       if (currentTargetIndex === 1 && leftDist > rightDist * 1.2) direction = 'Left';
       else if (currentTargetIndex === 2 && rightDist > leftDist * 1.2) direction = 'Right';
-      if (currentTargetIndex === 0) direction = 'Center'; // first photo auto
+      if (currentTargetIndex === 0 && (faceRatio < 0.35)) direction = 'Center'; // first photo auto
 
       new faceapi.draw.DrawTextField([direction], detection.box.bottomLeft).draw(canvas);
 
