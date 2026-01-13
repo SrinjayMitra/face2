@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Face API + WebView Token</title>
+
+  
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-T7W25D703G"></script>
 <script>
@@ -171,6 +173,74 @@
       box-sizing: border-box;
       z-index: 9999;
     }
+#loading-screen {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at top, #1e1e2f, #09090f);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
+}
+
+.loader-card {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px);
+  border-radius: 22px;
+  padding: 32px 28px;
+  width: 85%;
+  max-width: 320px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+
+.loader-card h2 {
+  color: #fff;
+  margin: 18px 0 6px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.loader-card p {
+  color: #b8b8d4;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.avatar-ring {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  margin: 0 auto;
+  border: 4px solid rgba(255,255,255,0.1);
+  border-top-color: #7c7cff;
+  animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.progress {
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px;
+  margin-top: 22px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #7c7cff, #ff6ec7);
+  animation: progress 3s ease-in-out forwards;
+}
+
+@keyframes progress {
+  to { width: 100%; }
+}
+
   </style>
 </head>
 <body>
@@ -187,6 +257,21 @@
     <h2>Captured Faces</h2>
     <div id="gallery-images"></div>
   </div>
+
+  <!-- AVATAR LOADING SCREEN -->
+<div id="loading-screen">
+  <div class="loader-card">
+    <div class="avatar-ring"></div>
+
+    <h2>Creating your avatar</h2>
+    <p>This may take a moment.<br />Please don’t close the app.</p>
+
+    <div class="progress">
+      <div class="progress-bar"></div>
+    </div>
+  </div>
+</div>
+
 
   <div id="log-container"></div>
 

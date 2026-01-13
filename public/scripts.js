@@ -1,6 +1,6 @@
 console.log(faceapi);
 
-const directions = ['Left', 'Right', 'Center'];
+const directions = ['Center', 'Left', 'Right'];
 let currentTargetIndex = 0;
 const MAX_PHOTOS = 5;
 let uploadedFileKeys = [];
@@ -135,11 +135,30 @@ const run = async () => {
       const eyeAvgY = (leftEyeY + rightEyeY) / 2;
       const verticalDiff = noseY - eyeAvgY;
 
-      let direction = 'Center';
-      if (leftDist > rightDist * 1.2) direction = 'Left';
-      else if (rightDist > leftDist * 1.2) direction = 'Right';
-      else if (verticalDiff > 15) direction = 'Down';
-      else if (verticalDiff < -15) direction = 'Up';
+      // let direction = 'Center';
+      // if (leftDist > rightDist * 1.1) direction = 'Left';
+      // else if (rightDist > leftDist * 1.1) direction = 'Right';
+      // else if (verticalDiff > 15) direction = 'Down';
+      // else if (verticalDiff < -10) direction = 'Up';
+
+let direction = 'Center';
+
+// LEFT / RIGHT
+if (leftDist > rightDist * 1.2) {
+  direction = 'Left';
+}
+else if (rightDist > leftDist * 1.2) {
+  direction = 'Right';
+}
+
+// UP / DOWN
+else if (verticalDiff > 20) {
+  direction = 'Down';
+}
+else if (verticalDiff < -5) {
+  direction = 'Up';
+}
+
 
       new faceapi.draw.DrawTextField([direction], detection.box.bottomLeft).draw(canvas);
 
@@ -292,13 +311,19 @@ const data = await res.json();
 
       const confirmData = await confirmRes.json();
       console.log("✅ Training confirmed:", confirmData);
-       showCenterMessage(["All done!", "Closing…"], 3000);
+      // Hide camera UI
+document.getElementById("video-feed").style.display = "none";
+document.getElementById("canvas").style.display = "none";
 
-  
-      setTimeout(() => {
-    closeWebView();
-  }, 3000);
+// Show pretty loading page
+showLoadingScreen();
 
+// Close WebView after short delay
+setTimeout(() => {
+  closeWebView();
+}, 2500);
+
+       
     }
 
   } catch (err) {
@@ -356,6 +381,12 @@ function closeWebView() {
     window.close();
     window.location.href = "about:blank";
   }
+}
+
+
+function showLoadingScreen() {
+  const screen = document.getElementById("loading-screen");
+  screen.style.display = "flex";
 }
 
 
