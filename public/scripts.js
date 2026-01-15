@@ -191,37 +191,57 @@ if (currentTargetIndex === 0 && neutralVertical === null) {
   //   verticalDiff < PRE_VERTICAL_CENTER - PRE_VERTICAL_TOLERANCE ||
   //   verticalDiff > PRE_VERTICAL_CENTER + PRE_VERTICAL_TOLERANCE
   // ) {
+  //   console .log("Pre-calibration vertical off:", verticalDiff.toFixed(2));
   //   showCenterMessage(["Level your head"], 500);
   //   direction = null;
   //   return;
   // }
 
+  const verticalOffset = verticalDiff - PRE_VERTICAL_CENTER;
+
+if (verticalOffset < -PRE_VERTICAL_TOLERANCE) {
+  // Nose is too high → user might need to lower phone or lower chin
+  showCenterMessage(["Lower your head or phone slightly"], 500);
+  console.log("Pre-calibration vertical too high:", verticalDiff.toFixed(2));
+  direction = null;
+  return;
+}
+else if (verticalOffset > PRE_VERTICAL_TOLERANCE) {
+  // Nose is too low → user might need to lift phone or chin
+  showCenterMessage(["Raise your head or phone slightly"], 500);
+  console.log("Pre-calibration vertical too low:", verticalDiff.toFixed(2));
+  direction = null;
+  return;
+}
+
+
 
    // ✅ Only check vertical if we have a calibrated neutralVertical
-else if (neutralVertical !== null) {
-  const verticalOffset = verticalDiff - neutralVertical;
+// else if (neutralVertical !== null) {
+//   const verticalOffset = verticalDiff - neutralVertical;
 
-  if (verticalOffset < -FINAL_VERTICAL_TOLERANCE) {
-    // Head is too low relative to neutral
-    if (noseY > eyeAvgY + 15) { 
-      // Phone is angled too low
-      showCenterMessage(["Raise your phone slightly"], 500);
-    } else {
-      // Head tilted down
-      showCenterMessage(["Lift your chin slightly"], 500);
-    }
-    direction = null;
-  } 
-  else if (verticalOffset > FINAL_VERTICAL_TOLERANCE) {
-    // Head too high
-    showCenterMessage(["Lower your chin slightly"], 500);
-    direction = null;
-  }
-  else {
-    // ✅ Vertical OK
-    direction = 'Center';
-  }
-}
+//   if (verticalOffset < -FINAL_VERTICAL_TOLERANCE) {
+//     // Head is too low relative to neutral
+//     if (noseY > eyeAvgY + 15) { 
+//       console.log("Phone angle low:", noseY, eyeAvgY);
+//       // Phone is angled too low
+//       showCenterMessage(["Raise your phone slightly"], 500);
+//     } else {
+//       // Head tilted down
+//       showCenterMessage(["Lift your chin slightly"], 500);
+//     }
+//     direction = null;
+//   } 
+//   else if (verticalOffset > FINAL_VERTICAL_TOLERANCE) {
+//     // Head too high
+//     showCenterMessage(["Lower your chin slightly"], 500);
+//     direction = null;
+//   }
+//   else {
+//     // ✅ Vertical OK
+//     direction = 'Center';
+//   }
+// }
 
   // ✅ SAFE TO CALIBRATE
   verticalSamples.push(verticalDiff);
