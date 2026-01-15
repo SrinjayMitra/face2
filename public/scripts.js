@@ -18,6 +18,9 @@ flashOverlay.style.zIndex = '10';
 flashOverlay.style.opacity = '0';
 flashOverlay.style.transition = 'opacity 0.2s ease-out';
 document.getElementById('video-section').appendChild(flashOverlay);
+let neutralVertical = null;
+let verticalSamples = [];
+
 
 function triggerFlash() {
   flashOverlay.style.opacity = '1';
@@ -137,39 +140,116 @@ const run = async () => {
       const eyeAvgY = (leftEyeY + rightEyeY) / 2;
       const verticalDiff = noseY - eyeAvgY;
 
+      /* ============ VERTICAL CALIBRATION (CENTER) ============ */
+
+
       // let direction = 'Center';
       // if (leftDist > rightDist * 1.1) direction = 'Left';
       // else if (rightDist > leftDist * 1.1) direction = 'Right';
       // else if (verticalDiff > 15) direction = 'Down';
       // else if (verticalDiff < -10) direction = 'Up';
 
-// let direction = 'Center';
 
-// // LEFT / RIGHT
+const STRAIGHT_TOLERANCE = 1.12; // lower = stricter
+const VERTICAL_TOLERANCE_UP = -10; // Nose too high → looking up
+const VERTICAL_TOLERANCE_DOWN = 15; // Nose too low → looking down
+const eyeBalance = leftDist / rightDist;
+const NEUTRAL_VERTICAL = 51.97; // straight-looking baseline
+const PRE_VERTICAL_CENTER = 52;    // approx straight (your observed value)
+const PRE_VERTICAL_TOLERANCE = 10; // allow small error before calibration
+const FINAL_VERTICAL_TOLERANCE = 12;
+const VERTICAL_SAMPLE_COUNT = 12
 
-// if (leftDist > rightDist * 1.2) {
-//   direction = 'Left';
-// }
-// else if (rightDist > leftDist * 1.2) {
-//   direction = 'Right';
-// }
-
-// // UP / DOWN
-// else if (verticalDiff > 20) {
-//   direction = 'Down';
-// }
-// else if (verticalDiff < -5) {
-//   direction = 'Up';
-// }
 
       let direction = 'Center';
       if (currentTargetIndex === 1 && leftDist > rightDist * 1.2) direction = 'Left';
       else if (currentTargetIndex === 2 && rightDist > leftDist * 1.2) direction = 'Right';
-      if (currentTargetIndex === 0 && (faceRatio < 0.35)) direction = 'Center'; // first photo auto
+      // if (currentTargetIndex === 0 && (faceRatio < 0.35)) direction = 'Center'; // first photo auto
+
+      
+if (currentTargetIndex === 0 && neutralVertical === null) {
+  // Distance check
+  if (faceRatio < 0.35) {
+    showCenterMessage(["Move closer to your phone"], 500);
+    direction = null;
+    return;
+  }
+
+  // LEFT / RIGHT check
+  if (
+    eyeBalance > STRAIGHT_TOLERANCE ||
+    eyeBalance < 1 / STRAIGHT_TOLERANCE
+  ) {
+    showCenterMessage(["Look straight at the camera"], 500);
+    direction = null;
+    return;
+  }
+
+  // UP / DOWN check (PRE-CALIBRATION WINDOW)
+  if (
+    verticalDiff < PRE_VERTICAL_CENTER - PRE_VERTICAL_TOLERANCE ||
+    verticalDiff > PRE_VERTICAL_CENTER + PRE_VERTICAL_TOLERANCE
+  ) {
+    showCenterMessage(["Level your head"], 500);
+    direction = null;
+    return;
+  }
+
+  // ✅ SAFE TO CALIBRATE
+  verticalSamples.push(verticalDiff);
+  showCenterMessage(["Hold still", "Calibrating…"], 500);
+
+  if (verticalSamples.length >= VERTICAL_SAMPLE_COUNT) {
+    neutralVertical =
+      verticalSamples.reduce((a, b) => a + b, 0) / verticalSamples.length;
+
+    console.log("✅ Calibrated neutralVertical:", neutralVertical.toFixed(2));
+    showCenterMessage(["Calibration complete"], 1000);
+  }
+
+  direction = null;
+  return;
+}
+
+else if (currentTargetIndex === 0) {
+  // ❌ Too far
+  if (faceRatio < 0.35) {
+    showCenterMessage(["Move closer to your phone"], 500);
+    direction = null; // block capture
+  }
+  // ❌ Looking left or right
+  else if (
+    eyeBalance > STRAIGHT_TOLERANCE ||
+    eyeBalance < 1 / STRAIGHT_TOLERANCE
+  ) {
+    showCenterMessage(["Look straight at the camera"], 500);
+    direction = null; // block capture
+  }
+  // ✅ Only check vertical if we have a calibrated neutralVertical
+  else if (neutralVertical !== null) {
+    if (verticalDiff < neutralVertical - FINAL_VERTICAL_TOLERANCE) {
+      showCenterMessage(["Lower your chin slightly"], 500);
+      direction = null;
+    }
+    else if (verticalDiff > neutralVertical + FINAL_VERTICAL_TOLERANCE) {
+      showCenterMessage(["Lift your chin slightly"], 500);
+      direction = null;
+    }
+    // ✅ All checks passed
+    else {
+      direction = 'Center';
+    }
+  }
+  // ⚡ If neutralVertical is null, allow calibration but do not capture
+  else {
+    direction = null;
+  }
+}
 
       new faceapi.draw.DrawTextField([direction], detection.box.bottomLeft).draw(canvas);
 
       const currentTarget = directions[currentTargetIndex];
+      if (!direction) return;
       if (direction === currentTarget && direction !== lastCaptured && picsTaken < MAX_PHOTOS) {
         lastCaptured = direction;
         if (captureTimeout) clearTimeout(captureTimeout);
