@@ -186,19 +186,43 @@ if (currentTargetIndex === 0 && neutralVertical === null) {
     return;
   }
 
-  // UP / DOWN check (PRE-CALIBRATION WINDOW)
- if (verticalDiff < PRE_VERTICAL_CENTER - PRE_VERTICAL_TOLERANCE) {
-  // Head too low → lift chin
-  showCenterMessage(["Lift your chin slightly"], 500);
-  direction = null;
-  return;
-} 
-else if (verticalDiff > PRE_VERTICAL_CENTER + PRE_VERTICAL_TOLERANCE) {
-  // Head too high → lower chin
-  showCenterMessage(["Lower your chin slightly"], 500);
-  direction = null;
-  return;
+  // // UP / DOWN check (PRE-CALIBRATION WINDOW)
+  // if (
+  //   verticalDiff < PRE_VERTICAL_CENTER - PRE_VERTICAL_TOLERANCE ||
+  //   verticalDiff > PRE_VERTICAL_CENTER + PRE_VERTICAL_TOLERANCE
+  // ) {
+  //   showCenterMessage(["Level your head"], 500);
+  //   direction = null;
+  //   return;
+  // }
+
+
+   // ✅ Only check vertical if we have a calibrated neutralVertical
+else if (neutralVertical !== null) {
+  const verticalOffset = verticalDiff - neutralVertical;
+
+  if (verticalOffset < -FINAL_VERTICAL_TOLERANCE) {
+    // Head is too low relative to neutral
+    if (noseY > eyeAvgY + 15) { 
+      // Phone is angled too low
+      showCenterMessage(["Raise your phone slightly"], 500);
+    } else {
+      // Head tilted down
+      showCenterMessage(["Lift your chin slightly"], 500);
+    }
+    direction = null;
+  } 
+  else if (verticalOffset > FINAL_VERTICAL_TOLERANCE) {
+    // Head too high
+    showCenterMessage(["Lower your chin slightly"], 500);
+    direction = null;
+  }
+  else {
+    // ✅ Vertical OK
+    direction = 'Center';
+  }
 }
+
   // ✅ SAFE TO CALIBRATE
   verticalSamples.push(verticalDiff);
   showCenterMessage(["Hold still", "Calibrating…"], 500);
