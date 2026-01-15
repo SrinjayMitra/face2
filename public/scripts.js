@@ -187,15 +187,18 @@ if (currentTargetIndex === 0 && neutralVertical === null) {
   }
 
   // UP / DOWN check (PRE-CALIBRATION WINDOW)
-  if (
-    verticalDiff < PRE_VERTICAL_CENTER - PRE_VERTICAL_TOLERANCE ||
-    verticalDiff > PRE_VERTICAL_CENTER + PRE_VERTICAL_TOLERANCE
-  ) {
-    showCenterMessage(["Level your head"], 500);
-    direction = null;
-    return;
-  }
-
+ if (verticalDiff < PRE_VERTICAL_CENTER - PRE_VERTICAL_TOLERANCE) {
+  // Head too low → lift chin
+  showCenterMessage(["Lift your chin slightly"], 500);
+  direction = null;
+  return;
+} 
+else if (verticalDiff > PRE_VERTICAL_CENTER + PRE_VERTICAL_TOLERANCE) {
+  // Head too high → lower chin
+  showCenterMessage(["Lower your chin slightly"], 500);
+  direction = null;
+  return;
+}
   // ✅ SAFE TO CALIBRATE
   verticalSamples.push(verticalDiff);
   showCenterMessage(["Hold still", "Calibrating…"], 500);
