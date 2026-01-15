@@ -483,6 +483,9 @@ function showLoadingScreen() {
 async function showWelcomeThenLoad() {
   const welcomeScreen = document.getElementById("welcome-screen");
   const videoSection = document.getElementById("video-section");
+  const continueBtn = document.getElementById("continue-btn");
+    continueBtn.disabled = true;
+    continueBtn.textContent = "Loading AI Models...";
 
   // Load models
   await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
@@ -490,6 +493,17 @@ async function showWelcomeThenLoad() {
   await faceapi.nets.faceExpressionNet.loadFromUri('/models');
   console.log("Models Loaded");
   await new Promise(resolve => setTimeout(resolve, 5000));
+
+  // Enable button once models are ready
+  continueBtn.disabled = false;
+
+  continueBtn.textContent = "Continue";
+
+  // Wait for user to click Continue
+  await new Promise(resolve => {
+    continueBtn.addEventListener("click", resolve, { once: true });
+  });
+
 
   // Hide welcome screen
   welcomeScreen.style.display = 'none';
