@@ -492,7 +492,7 @@ async function showWelcomeThenLoad() {
   await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
   await faceapi.nets.faceExpressionNet.loadFromUri('/models');
   console.log("Models Loaded");
-  await new Promise(resolve => setTimeout(resolve, 5000));
+  await new Promise(resolve => setTimeout(resolve, 2000));
 
   // Enable button once models are ready
   continueBtn.disabled = false;
