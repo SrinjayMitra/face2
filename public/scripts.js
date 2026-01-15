@@ -166,7 +166,8 @@ const VERTICAL_SAMPLE_COUNT = 12
       else if (currentTargetIndex === 2 && rightDist > leftDist * 1.2) direction = 'Right';
       // if (currentTargetIndex === 0 && (faceRatio < 0.35)) direction = 'Center'; // first photo auto
 
-      
+
+// calibration logic    
 if (currentTargetIndex === 0 && neutralVertical === null) {
   // Distance check
   if (faceRatio < 0.35) {
@@ -210,6 +211,8 @@ if (currentTargetIndex === 0 && neutralVertical === null) {
   direction = null;
   return;
 }
+
+
 
 else if (currentTargetIndex === 0) {
   // ❌ Too far
