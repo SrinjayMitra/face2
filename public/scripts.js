@@ -6,6 +6,9 @@ const MAX_PHOTOS = 3;
 let uploadedFileKeys = [];
 let centerMessage = null;
 let centerMessageUntil = 0;
+let stableSince = null;
+const STABILITY_DURATION = 1000; // ms required to hold still
+
 // Flash overlay element
 const flashOverlay = document.createElement('div');
 flashOverlay.style.position = 'absolute';
@@ -66,6 +69,8 @@ lightbox.addEventListener('click', e => { if(e.target===lightbox) lightbox.style
 // Main
 const run = async () => {
   let picsTaken = 0;
+  let lastStableFace = null;
+
 
   const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
   const videoElement = document.getElementById("video-feed");
@@ -114,6 +119,14 @@ const run = async () => {
     resizedDetections.forEach(face => {
       const { landmarks, detection } = face;
       if (!landmarks) return;
+
+      if (!isFaceFullyVisible(face, videoElement)) {
+  showCenterMessage(
+    ["Ensure your full face is visible", "No cropping or tilt"],
+    600
+  );
+  return;
+}
   /* ================= PHONE DISTANCE CHECK ================= */
   
       const faceBox = detection.box;
@@ -302,7 +315,36 @@ else if (currentTargetIndex === 0 ) {
       const currentTarget = directions[currentTargetIndex];
       if (!direction) return;
       if (direction === currentTarget && direction !== lastCaptured && picsTaken < MAX_PHOTOS) {
-        lastCaptured = direction;
+          const stable = isFaceStable(face, lastStableFace);
+
+  if (!stable) {
+    stableSince = null;
+    showCenterMessage(["Hold still…"], 300);
+    lastStableFace = face;
+    return;
+  }
+
+  if (!stableSince) {
+    stableSince = Date.now();
+    showCenterMessage(["Hold still…"], 300);
+    lastStableFace = face;
+    return;
+  }
+
+  if (Date.now() - stableSince < STABILITY_DURATION) {
+    showCenterMessage(["Hold still…"], 300);
+    lastStableFace = face;
+    return;
+  }
+     // ✅ FACE STABLE — CAPTURE
+  stableSince = null;
+  lastStableFace = null;
+  lastCaptured = direction;
+
+  // ✅ FACE STABLE — CAPTURE
+  stableSince = null;
+  lastStableFace = null;
+  lastCaptured = direction;
         if (captureTimeout) clearTimeout(captureTimeout);
 
         captureTimeout = setTimeout(() => {
@@ -528,6 +570,68 @@ function showLoadingScreen() {
 }
 
 // JS - Replace your old run() call with this
+
+function isFaceFullyVisible(face, videoElement) {
+  const { detection, landmarks } = face;
+
+  if (!detection || !landmarks) return false;
+
+  // 1️⃣ Face box inside frame
+  const box = detection.box;
+  const margin = 20;
+
+  if (
+    box.x < margin ||
+    box.y < margin ||
+    box.x + box.width > videoElement.videoWidth - margin ||
+    box.y + box.height > videoElement.videoHeight - margin
+  ) {
+    return false;
+  }
+
+  // 2️⃣ Face size sanity check
+  const faceRatio = box.width / videoElement.videoWidth;
+  if (faceRatio < 0.30 || faceRatio > 0.65) return false;
+
+  // 3️⃣ Required landmarks exist
+  const required = [
+    landmarks.getLeftEye(),
+    landmarks.getRightEye(),
+    landmarks.getNose(),
+    landmarks.getMouth(),
+    landmarks.getJawOutline()
+  ];
+
+  if (required.some(p => !p || p.length === 0)) return false;
+
+  // 4️⃣ Eye alignment (no heavy tilt)
+  const leftEye = landmarks.getLeftEye();
+  const rightEye = landmarks.getRightEye();
+
+  const leftEyeY = leftEye.reduce((s, p) => s + p.y, 0) / leftEye.length;
+  const rightEyeY = rightEye.reduce((s, p) => s + p.y, 0) / rightEye.length;
+
+  if (Math.abs(leftEyeY - rightEyeY) > 22) return false;
+
+  return true;
+}
+
+function isFaceStable(face, lastFace) {
+  if (!lastFace) return true;
+
+  const a = face.detection.box;
+  const b = lastFace.detection.box;
+
+  const dx = Math.abs(a.x - b.x);
+  const dy = Math.abs(a.y - b.y);
+  const dw = Math.abs(a.width - b.width);
+  const dh = Math.abs(a.height - b.height);
+
+  // movement tolerance (pixels)
+  return dx < 6 && dy < 6 && dw < 6 && dh < 6;
+}
+
+
 async function showWelcomeThenLoad() {
   const welcomeScreen = document.getElementById("welcome-screen");
   const videoSection = document.getElementById("video-section");
@@ -561,7 +665,6 @@ async function showWelcomeThenLoad() {
   // Start the camera and capture
   run(); // your existing run() function
 }
-
 // Start everything via welcome screen
 showWelcomeThenLoad();
 
