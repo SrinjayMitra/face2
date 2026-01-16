@@ -154,7 +154,7 @@ const run = async () => {
       console.log("Face ratio:", faceRatio.toFixed(2));
 
       /* ===== DISTANCE CHECK ===== */
-      if (faceRatio < 0.35) {
+      if (faceRatio < 0.3) {
         showCenterMessage(["Move closer to your phone"], 3000);
         return;
       }
@@ -183,14 +183,14 @@ const run = async () => {
       // else if (verticalDiff > 15) direction = 'Down';
       // else if (verticalDiff < -10) direction = 'Up';
 
-      const STRAIGHT_TOLERANCE = 1.3; // lower = stricter
+      const STRAIGHT_TOLERANCE = 1.23; // lower = stricter
       const VERTICAL_TOLERANCE_UP = -10; // Nose too high → looking up
       const VERTICAL_TOLERANCE_DOWN = 15; // Nose too low → looking down
       const eyeBalance = leftDist / rightDist;
       const NEUTRAL_VERTICAL = 51.97; // straight-looking baseline
       const PRE_VERTICAL_CENTER = 52; // approx straight (your observed value)
       const PRE_VERTICAL_TOLERANCE = 10; // allow small error before calibration
-      const FINAL_VERTICAL_TOLERANCE = 12;
+      const FINAL_VERTICAL_TOLERANCE = 10;
       const VERTICAL_SAMPLE_COUNT = 12;
 
       let direction = "Center";
