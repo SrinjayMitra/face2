@@ -154,7 +154,7 @@ const run = async () => {
       console.log("Face ratio:", faceRatio.toFixed(2));
 
       /* ===== DISTANCE CHECK ===== */
-      if (faceRatio < 0.3) {
+      if (faceRatio < 0.25) {
         showCenterMessage(["Move closer to your phone"], 3000);
         return;
       }
@@ -204,7 +204,7 @@ const run = async () => {
       if (currentTargetIndex === 0 && neutralVertical === null) {
         // if ( neutralVertical === null) {
         // Distance check
-        if (faceRatio < 0.3) {
+        if (faceRatio < 0.25) {
           showCenterMessage(["Move closer to your phone"], 500);
           direction = null;
           return;
@@ -299,7 +299,7 @@ const run = async () => {
         return;
       } else if (currentTargetIndex === 0) {
         // ❌ Too far
-        if (faceRatio < 0.3) {
+        if (faceRatio < 0.25) {
           showCenterMessage(["Move closer to your phone"], 500);
           direction = null; // block capture
         }
@@ -621,7 +621,7 @@ function isFaceFullyVisible(face, videoElement) {
 
   // 2️⃣ Face size sanity check
   const faceRatio = box.width / videoElement.videoWidth;
-  if (faceRatio < 0.3 || faceRatio > 0.65) return false;
+  if (faceRatio < 0.1 || faceRatio > 0.65) return false;
 
   // 3️⃣ Required landmarks exist
   const required = [
