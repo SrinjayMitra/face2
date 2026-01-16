@@ -351,14 +351,14 @@ const run = async () => {
 
         if (!stable) {
           stableSince = null;
-          showCenterMessage(["Hold still…"], 300);
+          showCenterMessage(["Hold still…"], 500);
           lastStableFace = face;
           return;
         }
 
         if (!stableSince) {
           stableSince = Date.now();
-          showCenterMessage(["Hold still…"], 300);
+          showCenterMessage(["Hold still…"], 500);
           lastStableFace = face;
           return;
         }
@@ -368,7 +368,7 @@ const run = async () => {
             [
               `Hold still… ${Math.ceil((REQUIRED_STABILITY - heldTime) / 100)}0%`,
             ],
-            300,
+            500,
           );
           lastStableFace = face;
           return;
