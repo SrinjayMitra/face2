@@ -611,8 +611,8 @@ function isFaceFullyVisible(face, videoElement) {
   if (!detection || !landmarks) return false;
 
   // 1️⃣ Face box inside frame
-  const box = detection.box;
-  const margin = 20;
+  const box = face.detection.box;
+  const margin = 10;
 
   if (
     box.x < margin ||
