@@ -366,7 +366,7 @@ const run = async () => {
         if (Date.now() - stableSince < STABILITY_DURATION) {
           showCenterMessage(
             [
-              `Hold still… ${Math.ceil((STABILITY_DURATION - heldTime) / 100)}0%`,
+              `Hold still… ${Math.ceil((STABILITY_DURATION - (Date.now() - stableSince)) / 100)}0%`,
             ],
             500,
           );
