@@ -204,7 +204,7 @@ const run = async () => {
       if (currentTargetIndex === 0 && neutralVertical === null) {
         // if ( neutralVertical === null) {
         // Distance check
-        if (faceRatio < 0.35) {
+        if (faceRatio < 0.3) {
           showCenterMessage(["Move closer to your phone"], 500);
           direction = null;
           return;
@@ -299,7 +299,7 @@ const run = async () => {
         return;
       } else if (currentTargetIndex === 0) {
         // ❌ Too far
-        if (faceRatio < 0.35) {
+        if (faceRatio < 0.3) {
           showCenterMessage(["Move closer to your phone"], 500);
           direction = null; // block capture
         }
