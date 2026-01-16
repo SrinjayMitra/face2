@@ -204,7 +204,7 @@ const run = async () => {
       if (currentTargetIndex === 0 && neutralVertical === null) {
         // if ( neutralVertical === null) {
         // Distance check
-        if (faceRatio < 0.25) {
+        if (faceRatio > 0.3) {
           showCenterMessage(["Move closer to your phone"], 500);
           direction = null;
           return;
@@ -391,7 +391,7 @@ const run = async () => {
             videoElement.style.filter = "blur(6px)";
             canvas.style.filter = "blur(6px)";
           }
-        }, 1500);
+        }, 1000);
       }
     });
   }, 200);
