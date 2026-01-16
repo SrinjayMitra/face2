@@ -140,13 +140,6 @@ const run = async () => {
       const { landmarks, detection } = face;
       if (!landmarks) return;
 
-      if (!isFaceFullyVisible(face, videoElement)) {
-        showCenterMessage(
-          ["Ensure your full face is visible", "No cropping or tilt"],
-          600,
-        );
-        return;
-      }
       /* ================= PHONE DISTANCE CHECK ================= */
 
       const faceBox = detection.box;
@@ -156,6 +149,14 @@ const run = async () => {
       /* ===== DISTANCE CHECK ===== */
       if (faceRatio < 0.45) {
         showCenterMessage(["Move closer to your phone"], 3000);
+        return;
+      }
+
+      if (!isFaceFullyVisible(face, videoElement)) {
+        showCenterMessage(
+          ["Ensure your full face is visible", "No cropping or tilt"],
+          600,
+        );
         return;
       }
 
