@@ -24,8 +24,9 @@ document.getElementById("video-section").appendChild(flashOverlay);
 let neutralVertical = null;
 let verticalSamples = [];
 
-function triggerFlash() {
+async function triggerFlash() {
   showCenterMessage([`Capturing...`], 500);
+  await new Promise((resolve) => setTimeout(resolve, 50));
   flashOverlay.style.opacity = "1";
   setTimeout(() => {
     flashOverlay.style.opacity = "0";
@@ -363,14 +364,13 @@ const run = async () => {
           lastStableFace = face;
           return;
         }
-
-        if (Date.now() - stableSince < STABILITY_DURATION) {
-          showCenterMessage(
-            [
-              `Hold still… ${Math.ceil((STABILITY_DURATION - (Date.now() - stableSince)) / 100)}0%`,
-            ],
-            500,
-          );
+        const heldTime = Date.now() - stableSince;
+        const percent = Math.min(
+          100,
+          Math.ceil((heldTime / STABILITY_DURATION) * 100),
+        );
+        if (heldTime < STABILITY_DURATION) {
+          showCenterMessage([`Hold still… ${percent}%`], 500);
           lastStableFace = face;
           return;
         }
