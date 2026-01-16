@@ -73,10 +73,10 @@ const run = async () => {
 
   await new Promise(resolve => { videoElement.onloadedmetadata = () => { videoElement.play(); resolve(); } });
 
-  await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
-  await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
-  await faceapi.nets.faceExpressionNet.loadFromUri('/models');
-  console.log("Models Loaded");
+  // await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+  // await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+  // await faceapi.nets.faceExpressionNet.loadFromUri('/models');
+  // console.log("Models Loaded");
 
   showCenterMessage(["Models Loading", "Look straight for a few seconds"], 3000);
 
@@ -162,13 +162,14 @@ const VERTICAL_SAMPLE_COUNT = 12
 
 
       let direction = 'Center';
-      if (currentTargetIndex === 1 && leftDist > rightDist * 1.2) direction = 'Left';
-      else if (currentTargetIndex === 2 && rightDist > leftDist * 1.2) direction = 'Right';
+      if (currentTargetIndex === 1 && leftDist > rightDist * 1.5) direction = 'Left';
+      else if (currentTargetIndex === 2 && rightDist > leftDist * 1.5) direction = 'Right';
       // if (currentTargetIndex === 0 && (faceRatio < 0.35)) direction = 'Center'; // first photo auto
 
 
 // calibration logic    
 if (currentTargetIndex === 0 && neutralVertical === null) {
+  // if ( neutralVertical === null) {
   // Distance check
   if (faceRatio < 0.35) {
     showCenterMessage(["Move closer to your phone"], 500);
@@ -261,7 +262,7 @@ else if (verticalOffset > PRE_VERTICAL_TOLERANCE) {
 
 
 
-else if (currentTargetIndex === 0) {
+else if (currentTargetIndex === 0 ) {
   // ❌ Too far
   if (faceRatio < 0.35) {
     showCenterMessage(["Move closer to your phone"], 500);
