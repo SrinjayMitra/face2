@@ -25,7 +25,7 @@ let neutralVertical = null;
 let verticalSamples = [];
 
 function triggerFlash() {
-  showCenterMessage([`Capturing ${direction}...`], 500);
+  showCenterMessage([`Capturing...`], 500);
   flashOverlay.style.opacity = "1";
   setTimeout(() => {
     flashOverlay.style.opacity = "0";
