@@ -7,7 +7,7 @@ let uploadedFileKeys = [];
 let centerMessage = null;
 let centerMessageUntil = 0;
 let stableSince = null;
-const STABILITY_DURATION = 1000; // ms required to hold still
+const STABILITY_DURATION = 700; // ms required to hold still
 
 // Flash overlay element
 const flashOverlay = document.createElement("div");
@@ -347,24 +347,29 @@ const run = async () => {
         direction !== lastCaptured &&
         picsTaken < MAX_PHOTOS
       ) {
-        const stable = isFaceStable(face, lastStableFace);
+        const stable = isFaceStable(face, lastStableFace, 8);
 
         if (!stable) {
           stableSince = null;
-          showCenterMessage(["Hold still…"], 300);
+          showCenterMessage(["Hold still…"], 200);
           lastStableFace = face;
           return;
         }
 
         if (!stableSince) {
           stableSince = Date.now();
-          showCenterMessage(["Hold still…"], 300);
+          showCenterMessage(["Hold still…"], 200);
           lastStableFace = face;
           return;
         }
 
         if (Date.now() - stableSince < STABILITY_DURATION) {
-          showCenterMessage(["Hold still…"], 300);
+          showCenterMessage(
+            [
+              `Hold still… ${Math.ceil((REQUIRED_STABILITY - heldTime) / 100)}0%`,
+            ],
+            200,
+          );
           lastStableFace = face;
           return;
         }
@@ -392,7 +397,7 @@ const run = async () => {
             videoElement.style.filter = "blur(6px)";
             canvas.style.filter = "blur(6px)";
           }
-        }, 1000);
+        }, 1500);
       }
     });
   }, 200);
@@ -647,7 +652,7 @@ function isFaceFullyVisible(face, videoElement) {
   return true;
 }
 
-function isFaceStable(face, lastFace) {
+function isFaceStable(face, lastFace, tolerance = 8) {
   if (!lastFace) return true;
 
   const a = face.detection.box;
@@ -659,7 +664,9 @@ function isFaceStable(face, lastFace) {
   const dh = Math.abs(a.height - b.height);
 
   // movement tolerance (pixels)
-  return dx < 6 && dy < 6 && dw < 6 && dh < 6;
+  return (
+    dx <= tolerance && dy <= tolerance && dw <= tolerance && dh <= tolerance
+  );
 }
 
 async function showWelcomeThenLoad() {
