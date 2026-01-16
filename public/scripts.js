@@ -147,7 +147,7 @@ const run = async () => {
       console.log("Face ratio:", faceRatio.toFixed(2));
 
       /* ===== DISTANCE CHECK ===== */
-      if (faceRatio < 0.45) {
+      if (faceRatio < 0.55) {
         showCenterMessage(["Move closer to your phone"], 3000);
         return;
       }
@@ -205,7 +205,7 @@ const run = async () => {
       if (currentTargetIndex === 0 && neutralVertical === null) {
         // if ( neutralVertical === null) {
         // Distance check
-        if (faceRatio < 0.45) {
+        if (faceRatio < 0.55) {
           showCenterMessage(["Move closer to your phone"], 500);
           direction = null;
           return;
@@ -300,7 +300,7 @@ const run = async () => {
         return;
       } else if (currentTargetIndex === 0) {
         // ❌ Too far
-        if (faceRatio < 0.45) {
+        if (faceRatio < 0.55) {
           showCenterMessage(["Move closer to your phone"], 500);
           direction = null; // block capture
         }
