@@ -381,6 +381,7 @@ const run = async () => {
         if (captureTimeout) clearTimeout(captureTimeout);
 
         captureTimeout = setTimeout(() => {
+          showCenterMessage([`Capturing ${direction}...`], 500);
           triggerFlash(); // flash effect
           takePhotoAndSend(videoElement, direction, galleryContainer);
           picsTaken++;
