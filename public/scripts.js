@@ -7,7 +7,7 @@ let uploadedFileKeys = [];
 let centerMessage = null;
 let centerMessageUntil = 0;
 let stableSince = null;
-const STABILITY_DURATION = 700; // ms required to hold still
+const STABILITY_DURATION = 800; // ms required to hold still
 
 // Flash overlay element
 const flashOverlay = document.createElement("div");
