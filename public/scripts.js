@@ -25,6 +25,7 @@ let neutralVertical = null;
 let verticalSamples = [];
 
 function triggerFlash() {
+  showCenterMessage([`Capturing ${direction}...`], 500);
   flashOverlay.style.opacity = "1";
   setTimeout(() => {
     flashOverlay.style.opacity = "0";
@@ -381,7 +382,7 @@ const run = async () => {
         if (captureTimeout) clearTimeout(captureTimeout);
 
         captureTimeout = setTimeout(() => {
-          showCenterMessage([`Capturing ${direction}...`], 500);
+          // showCenterMessage([`Capturing ${direction}...`], 500);
           triggerFlash(); // flash effect
           takePhotoAndSend(videoElement, direction, galleryContainer);
           picsTaken++;
