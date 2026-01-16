@@ -183,7 +183,7 @@ const run = async () => {
       // else if (verticalDiff > 15) direction = 'Down';
       // else if (verticalDiff < -10) direction = 'Up';
 
-      const STRAIGHT_TOLERANCE = 1.12; // lower = stricter
+      const STRAIGHT_TOLERANCE = 1.3; // lower = stricter
       const VERTICAL_TOLERANCE_UP = -10; // Nose too high → looking up
       const VERTICAL_TOLERANCE_DOWN = 15; // Nose too low → looking down
       const eyeBalance = leftDist / rightDist;
