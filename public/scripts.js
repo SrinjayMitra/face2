@@ -366,17 +366,13 @@ const run = async () => {
         if (Date.now() - stableSince < STABILITY_DURATION) {
           showCenterMessage(
             [
-              `Hold still… ${Math.ceil((REQUIRED_STABILITY - heldTime) / 100)}0%`,
+              `Hold still… ${Math.ceil((STABILITY_DURATION - heldTime) / 100)}0%`,
             ],
             500,
           );
           lastStableFace = face;
           return;
         }
-        // ✅ FACE STABLE — CAPTURE
-        stableSince = null;
-        lastStableFace = null;
-        lastCaptured = direction;
 
         // ✅ FACE STABLE — CAPTURE
         stableSince = null;
