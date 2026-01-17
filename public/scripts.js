@@ -152,6 +152,9 @@ const run = async () => {
       if (faceRatio < 0.5) {
         showCenterMessage(["Move closer to your phone"], 500);
         return;
+      } else if (faceRatio > 0.65) {
+        showCenterMessage(["Move farther from your phone"], 500);
+        return;
       } else if (!isFaceFullyVisible(face, videoElement)) {
         showCenterMessage(
           ["Ensure your full face is visible", "No cropping or tilt"],
