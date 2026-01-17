@@ -192,7 +192,7 @@ const run = async () => {
       const eyeBalance = leftDist / rightDist;
       const NEUTRAL_VERTICAL = 51.97; // straight-looking baseline
       const PRE_VERTICAL_CENTER = 52; // approx straight (your observed value)
-      const PRE_VERTICAL_TOLERANCE = 10; // allow small error before calibration
+      const PRE_VERTICAL_TOLERANCE = 14; // allow small error before calibration
       const FINAL_VERTICAL_TOLERANCE = 10;
       const VERTICAL_SAMPLE_COUNT = 12;
 
