@@ -623,7 +623,13 @@ function isFaceFullyVisible(face, videoElement) {
 
   // 2️⃣ Face size sanity check
   const faceRatio = box.width / videoElement.videoWidth;
-  if (faceRatio < 0.2 || faceRatio > 0.65) return false;
+  if (faceRatio < 0.2) {
+    showCenterMessage(["Move closer to the camera"], 500);
+    return false;
+  } else if (faceRatio > 0.65) {
+    showCenterMessage(["Move farther from the camera"], 500);
+    return false;
+  }
 
   // 3️⃣ Required landmarks exist
   const required = [
