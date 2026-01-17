@@ -191,8 +191,8 @@ const run = async () => {
       const VERTICAL_TOLERANCE_DOWN = 15; // Nose too low → looking down
       const eyeBalance = leftDist / rightDist;
       const NEUTRAL_VERTICAL = 51.97; // straight-looking baseline
-      const PRE_VERTICAL_CENTER = 52; // approx straight (your observed value)
-      const PRE_VERTICAL_TOLERANCE = 10; // allow small error before calibration
+      const PRE_VERTICAL_CENTER = 56; // approx straight (your observed value)
+      const PRE_VERTICAL_TOLERANCE = 0; // allow small error before calibration
       const FINAL_VERTICAL_TOLERANCE = 10;
       const VERTICAL_SAMPLE_COUNT = 12;
 
@@ -612,7 +612,7 @@ function isFaceFullyVisible(face, videoElement) {
 
   // 1️⃣ Face box inside frame
   const box = face.detection.box;
-  const margin = 5;
+  const margin = 2;
 
   if (
     box.x < margin ||
