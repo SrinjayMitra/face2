@@ -150,14 +150,12 @@ const run = async () => {
 
       /* ===== DISTANCE CHECK ===== */
       if (faceRatio < 0.5) {
-        showCenterMessage(["Move closer to your phone"], 3000);
+        showCenterMessage(["Move closer to your phone"], 500);
         return;
-      }
-
-      if (!isFaceFullyVisible(face, videoElement)) {
+      } else if (!isFaceFullyVisible(face, videoElement)) {
         showCenterMessage(
           ["Ensure your full face is visible", "No cropping or tilt"],
-          600,
+          500,
         );
         return;
       }
@@ -193,7 +191,9 @@ const run = async () => {
       const NEUTRAL_VERTICAL = 51.97; // straight-looking baseline
       const PRE_VERTICAL_CENTER = 52; // approx straight (your observed value)
       const PRE_VERTICAL_TOLERANCE = 20; // allow small error before calibration
-      const FINAL_VERTICAL_TOLERANCE = 10;
+      const FINAL_VERTICAL_TOLERANCE_UP = 8; // stricter for looking up
+      const FINAL_VERTICAL_TOLERANCE_DOWN = 22; // looser for looking down
+
       const VERTICAL_SAMPLE_COUNT = 12;
 
       let direction = "Center";
@@ -316,13 +316,11 @@ const run = async () => {
         }
         // ✅ Only check vertical if we have a calibrated neutralVertical
         else if (neutralVertical !== null) {
-          if (verticalDiff < neutralVertical - FINAL_VERTICAL_TOLERANCE) {
+          const delta = verticalDiff - neutralVertical;
+          if (delta < -FINAL_VERTICAL_TOLERANCE_UP) {
             showCenterMessage(["Lower your chin slightly"], 500);
             direction = null;
-          } else if (
-            verticalDiff >
-            neutralVertical + FINAL_VERTICAL_TOLERANCE
-          ) {
+          } else if (delta > FINAL_VERTICAL_TOLERANCE_DOWN) {
             showCenterMessage(["Lift your chin slightly"], 500);
             direction = null;
           }
@@ -625,7 +623,7 @@ function isFaceFullyVisible(face, videoElement) {
 
   // 2️⃣ Face size sanity check
   const faceRatio = box.width / videoElement.videoWidth;
-  if (faceRatio < 0.1 || faceRatio > 0.65) return false;
+  if (faceRatio < 0.2 || faceRatio > 0.65) return false;
 
   // 3️⃣ Required landmarks exist
   const required = [
